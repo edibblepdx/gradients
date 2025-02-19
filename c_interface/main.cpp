@@ -1,0 +1,79 @@
+#include <stdlib.h>
+#include <curses.h> // includes stdio.h
+#include <signal.h>
+#include <unistd.h>
+#include <cstring>
+#include "colorspaces.hpp"
+
+#define OPTIONS "aaa"
+
+static void finish(int sig);
+
+int
+main(int argc, char *const argv[])
+{
+    (void) signal(SIGINT, finish);  // terminate on SIGNINT
+
+    Py_Initialize();
+    // Add current directory to path
+    PyObject *sysPath = PySys_GetObject("path");
+    PyList_Append(sysPath, PyUnicode_DecodeFSDefault("."));
+
+    if (argc > 1)   /* CLI Mode */
+    {
+        int opt = -1;
+        while ((opt = getopt(argc, argv, OPTIONS)) != -1) 
+        {
+            switch (opt) 
+            {
+                //case ${1:option}:
+                // ${2:description}
+                    break;
+                case 'h':
+                // Output some helpful text about command line options.
+                    //print_help(argv[0]);
+                    exit(EXIT_FAILURE);
+                    break;
+                default:
+                    // __builtin_unreachable(); ??
+                    break;
+            } // end switch
+        } // end while
+    }
+    else    /* TUI Mode */
+    {
+        (void) initscr();               // initialize the curses library
+
+        // settings
+        (void) keypad(stdscr, TRUE);    // enable keyboard mapping
+        (void) scrollok(stdscr, TRUE);  // allow stdscr to scroll
+        (void) leaveok(stdscr, TRUE);   // leave cursor after refresh
+    }
+
+    colors::RGB rgb{0.5f, 0.5f, 0.5f};
+    colors::XYZ xyz = convert<colors::RGB, colors::XYZ>("rgb_to_xyz", rgb);
+    colors::RGB rgb2 = convert<colors::XYZ, colors::RGB>("xyz_to_rgb", xyz);
+
+    for (;;)
+    {
+        mvprintw(10, 10, "rgb:  %f, %f, %f", rgb.r, rgb.g, rgb.b);
+        mvprintw(11, 10, "xyz:  %f, %f, %f", xyz.x, xyz.y, xyz.z);
+        mvprintw(12, 10, "back: %f, %f, %f", rgb2.r, rgb2.g, rgb2.b);
+        getch();
+        refresh();
+    }
+
+    finish(0);
+}
+
+static void finish(int sig)
+{
+    endwin(); // this could be a problem with CLI mode
+
+    Py_FinalizeEx();
+
+    printf("\nCTRL-C pressed -- goodbye\n\n");
+    // want to print saved colors and gradients here as well
+
+    exit(EXIT_SUCCESS);
+}

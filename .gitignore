@@ -1,0 +1,7 @@
+.venv
+.cache
+*.txt
+*.old
+old
+tomfoolery
+build
