@@ -1,3 +1,5 @@
+/* vim: set filetype=cpp : */
+
 template<class R_TYPE>
 inline R_TYPE parse_python(PyObject *pResult)
 {

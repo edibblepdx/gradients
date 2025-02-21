@@ -9,8 +9,6 @@
 #include <Python.h>
 #include "colorspaces.hpp"
 
-#define PYTHONFILE "colorspaces"
-
 namespace color
 {
     xyz_t rgb_to_xyz( const rgb_t& );
