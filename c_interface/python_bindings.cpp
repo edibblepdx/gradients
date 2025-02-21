@@ -1,25 +1,24 @@
 /*
  *  Ethan Dibble
  *
- *  Implement C++ bindings for Python color math.
+ *  Implementation of C++ bindings for Python color math.
  */
 
-#include "colorspaces.hpp"
-
-// Convert data values from C++ to Python,
-// Perform a function call to a Python interface routine using the converted values, and
-// Convert the data values from the call from Python to C++.
+#include "python_bindings.hpp"
+#include "python_bindings.tpp"
 
 #define PYTHONFILE "colorspaces"
 
-PyObject*
-call_python(const char *func_name, const float *input, const int size) {
+namespace color
+{
+
+static PyObject*
+call_python( const char *func_name, const color_t *input )
+{
     PyObject *pName, *pModule, *pFunc;
     PyObject *pArgs, *pValue;
-    int i;
 
     pName = PyUnicode_DecodeFSDefault(PYTHONFILE);
-    /* Error checking of pName left out */
     if (!pName) {
         PyErr_Print();
         fprintf(stderr, "Failed to decode module name\n");
@@ -31,16 +30,15 @@ call_python(const char *func_name, const float *input, const int size) {
 
     if (pModule != NULL) {
         pFunc = PyObject_GetAttrString(pModule, func_name);
-        /* pFunc is a new reference */
 
         if (pFunc && PyCallable_Check(pFunc)) {
             pArgs = PyTuple_New(1);
-            pValue = PyList_New(size);
-            for (i = 0; i < size; ++i) {
-                /* PyObject double reference stolen here: */
-                PyList_SetItem(pValue, i, PyFloat_FromDouble(input[i]));
-            }
-            /* pValue reference stolen here: */
+            pValue = PyList_New(3);
+
+            PyList_SetItem(pValue, 0, PyFloat_FromDouble(input->x));
+            PyList_SetItem(pValue, 1, PyFloat_FromDouble(input->y));
+            PyList_SetItem(pValue, 2, PyFloat_FromDouble(input->z));
+
             PyTuple_SetItem(pArgs, 0, pValue);
             pValue = PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);
@@ -66,4 +64,20 @@ call_python(const char *func_name, const float *input, const int size) {
         return NULL;
     }
     return pValue;
+}
+
+// Convert data values from C++ to Python,
+// Perform a function call to a Python interface routine using the converted values, and
+// Convert the data values from the call from Python to C++.
+
+////////////////////////////////////////////////////////////////////////////////
+
+xyz_t rgb_to_xyz( const rgb_t& c ) { return parse_python<xyz_t>(call_python("rgb_to_xyz", &c)); }
+rgb_t xyz_to_rgb( const xyz_t& c ) { return parse_python<rgb_t>(call_python("xyz_to_rgb", &c)); }
+
+////////////////////////////////////////////////////////////////////////////////
+
+lab_t xyz_to_lab( const xyz_t& c ) { return parse_python<lab_t>(call_python("xyz_to_lab", &c)); }
+
+////////////////////////////////////////////////////////////////////////////////
 }

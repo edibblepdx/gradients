@@ -2,88 +2,68 @@
  *  Ethan Dibble
  *
  *  Define color types and C++ bindings for Python color math.
- *  These data classes all contain 3 floats, but colors that
+ *  These data structs all contain 3 floats, but colors that
  *  are in different spaces are inherently different types.
+ *
+ *  All colors channels are accessed with x,y,z for all types
+ *  for simplicity. No alpha channel because it's not needed.
  */
 
 #pragma once
 #define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#include <array>
+
+static inline float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
 
 /* Define color types */
-namespace colors
+namespace color
 {
-    class COLOR {
-    public:
-        COLOR()             : alpha{1.f} {}
-        COLOR(float alpha)  : alpha{clamp(alpha)} {}
-
-        static float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
-
-        virtual std::array<float, 3> toArray()              = 0;
-        virtual void fromArray(std::array<float, 3> arr)    = 0;
-
-        float alpha;
-    };
-
-    class RGB: public COLOR {
-    public:
-        RGB() = default;
-        RGB(float r, float g, float b)              : r{clamp(r)}, g{clamp(g)}, b{clamp(b)} {}
-        RGB(float r, float g, float b, float alpha) : COLOR(alpha), r{clamp(r)}, g{clamp(g)}, b{clamp(b)} {}
-
-        std::array<float, 3> toArray()              override { return {r, g, b}; }
-        void fromArray(std::array<float, 3> arr)    override { r=clamp(arr[0]), g=clamp(arr[1]), b=clamp(arr[2]); }
-
-        float r{0.f}, g{0.f}, b{0.f};
-    };
-
-    class XYZ: public COLOR {
-    public:
-        XYZ() = default;
-        XYZ(float x, float y, float z)              : x{x}, y{y}, z{z} {}
-        XYZ(float x, float y, float z, float alpha) : COLOR(alpha), x{x}, y{y}, z{z} {}
-
-        std::array<float, 3> toArray()              override { return {x, y, z}; }
-        void fromArray(std::array<float, 3> arr)    override { x=clamp(arr[0]), y=clamp(arr[1]), z=clamp(arr[2]); }
+    struct color_t
+    {
+        color_t() = default;
+        color_t(float x, float y, float z) : x{x}, y{y}, z{z} {}
 
         float x{0.f}, y{0.f}, z{0.f};
     };
 
-    class LAB: public COLOR {
-    public:
-        LAB() = default;
-        LAB(float l, float a, float b)              : l{l}, a{a}, b{b} {}
-        LAB(float l, float a, float b, float alpha) : COLOR(alpha), l{l}, a{a}, b{b} {}
+    struct rgb_t: public color_t
+    {
+        rgb_t() = default;
+        rgb_t(float x, float y, float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
+    };
 
-        std::array<float, 3> toArray()              override { return {l, a, b}; }
-        void fromArray(std::array<float, 3> arr)    override { l=clamp(arr[0]), a=clamp(arr[1]), b=clamp(arr[2]); }
+    struct xyz_t: public color_t
+    {
+        xyz_t() = default;
+        xyz_t(float x, float y, float z) : color_t(x, y, z) {}
+    };
 
-        float l{0.f}, a{0.f}, b{0.f};
+    struct lab_t: public color_t
+    {
+        lab_t() = default;
+        lab_t(float x, float y, float z) : color_t(x, y, z) {}
     };
 }
 
-PyObject* call_python(const char *func_name, const float *input, const int size);
+/*
+// linearly interpolate a gradient in a given space and convert if chosen
+// in most cases, I will interpolate in one space and convert samples to RGB to display
+// please compiler optimize my return value
+template<class IN, class OUT = IN>
+std::vector<OUT> linear_gradient(IN start, IN end, int n_samples, char *conversion)
+{
+    std::vector<OUT> gradient;
 
-template<class IN, class OUT>
-OUT convert(const char *func_name, IN input) {
-    float *in = input.toArray().data();
-    PyObject *pResult = call_python(func_name, in, 3);
+    float step_X = 0.f;
+    float step_Y = 0.f;
+    float step_Z = 0.f;
 
-    OUT output;
-    if (pResult && PyList_Check(pResult)) {
-        output.fromArray({
-            static_cast<float>(PyFloat_AsDouble(PyList_GetItem(pResult, 0))),
-            static_cast<float>(PyFloat_AsDouble(PyList_GetItem(pResult, 1))),
-            static_cast<float>(PyFloat_AsDouble(PyList_GetItem(pResult, 2))),
-        });
+    // standard lerp
+    for (int i = 0; i < n_samples; ++i) {
+        if (conversion) {
+            convert(conversion, input);
+        }
     }
-    if (PyErr_Occurred()) {
-        PyErr_Print();
-        fprintf(stderr, "Failed to parse return value\n");
-    }
-    Py_DECREF(pResult);
 
-    return output;
+    return gradient;
 }
+*/
