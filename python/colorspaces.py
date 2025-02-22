@@ -4,22 +4,26 @@
 colorspaces.py - conversions between colorspaces.
 
 Author: Ethan Dibble
+
+Sources for conversions:
+- https://docs.opencv.org/3.1.0/de/d25/imgproc_color_conversions.html#gsc.tab=0
+- https://poynton.ca/PDFs/coloureq.pdf
 """
 
 import numpy as np
 
 def rgb_to_xyz(rgb):
     # sRGB to XYZ conversion matrix
-    M = np.array([[0.4124, 0.3576, 0.1805],
-                  [0.2126, 0.7151, 0.0721],
-                  [0.0193, 0.1192, 0.9505]])
+    M = np.array([[0.412453, 0.357580, 0.180423],
+                  [0.212671, 0.715160, 0.072169],
+                  [0.019334, 0.119193, 0.950227]])
 
     return np.dot(M, rgb).tolist()
 
 def xyz_to_rgb(xyz):
-    M_inv = np.array([[ 3.2408, -1.5375, -0.4988],
-                      [-0.9691,  1.8761,  0.0417],
-                      [ 0.0557, -0.2041,  1.0570]])
+    M_inv = np.array([[ 3.240479, -1.53715,  -0.498535],
+                      [-0.969256,  1.875991,  0.041556],
+                      [ 0.055648, -0.204043,  1.057311]])
 
     return np.clip(np.dot(M_inv, xyz), 0, 1).tolist()
 
