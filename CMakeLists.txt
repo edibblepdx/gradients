@@ -19,7 +19,8 @@ file(GLOB CXX_SRCS "${SRC_DIR}/*.cpp")
 add_executable(gradients ${CXX_SRCS})
 
 # Add include directories
-target_include_directories(gradients PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(gradients PRIVATE ${INCLUDE_DIR})
 
 #set(scripts "${CMAKE_SOURCE_DIR}/../py_color")
 #add_compile_definitions(PYTHONFILE="${scripts}/colorspaces.py")

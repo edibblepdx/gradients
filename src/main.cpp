@@ -58,12 +58,15 @@ main(int argc, char *const argv[])
     color::rgb_t rgb2 = color::xyz_to_rgb(xyz);
     color::lab_t lab = color::xyz_to_lab(xyz);
 
+    color::rgb_t rgb3 = rgb + rgb2;
+
     for (;;)
     {
         mvprintw(10, 10, "rgb:  %f, %f, %f", rgb.x, rgb.y, rgb.z);
         mvprintw(11, 10, "xyz:  %f, %f, %f", xyz.x, xyz.y, xyz.z);
         mvprintw(12, 10, "back: %f, %f, %f", rgb2.x, rgb2.y, rgb2.z);
         mvprintw(13, 10, "lab:  %f, %f, %f", lab.x, lab.y, lab.z);
+        mvprintw(14, 10, "rgb:  %f, %f, %f", rgb3.x, rgb3.y, rgb3.z);
         getch();
         refresh();
     }

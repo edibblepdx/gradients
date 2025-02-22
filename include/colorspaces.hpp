@@ -10,9 +10,8 @@
  */
 
 #pragma once
-#define PY_SSIZE_T_CLEAN
 
-static inline float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
+static inline constexpr float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
 
 /* Define color types */
 namespace color
@@ -20,7 +19,7 @@ namespace color
     struct color_t
     {
         color_t() = default;
-        color_t(float x, float y, float z) : x{x}, y{y}, z{z} {}
+        color_t(const float x, const float y, const float z) : x{x}, y{y}, z{z} {}
 
         float x{0.f}, y{0.f}, z{0.f};
     };
@@ -28,20 +27,34 @@ namespace color
     struct rgb_t: public color_t
     {
         rgb_t() = default;
-        rgb_t(float x, float y, float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
+        rgb_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
     };
 
     struct xyz_t: public color_t
     {
         xyz_t() = default;
-        xyz_t(float x, float y, float z) : color_t(x, y, z) {}
+        xyz_t(const float x, const float y, const float z) : color_t(x, y, z) {}
     };
 
     struct lab_t: public color_t
     {
         lab_t() = default;
-        lab_t(float x, float y, float z) : color_t(x, y, z) {}
+        lab_t(const float x, const float y, const float z) : color_t(x, y, z) {}
     };
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    template<class T>
+    constexpr T operator + (const T &c1, const T &c2)
+    {
+        return T { c1.x + c2.x, c1.y + c2.y, c1.z + c2.z };
+    }
+
+    template<class T>
+    constexpr T operator - (const T &c1, const T &c2)
+    {
+        return T { c1.x - c2.x, c1.y - c2.y, c1.z - c2.z };
+    }
 }
 
 /*
