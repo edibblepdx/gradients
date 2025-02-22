@@ -12,22 +12,89 @@ Sources for conversions:
 
 import numpy as np
 
-def rgb_to_xyz(rgb):
-    # sRGB to XYZ conversion matrix
+type Vector = list[float]
+
+def rgb_to_gray(rgb: Vector) -> Vector:
+    """
+    Input: [0,1]
+    Output: [0,1]
+    """
+    intensity = (0.299 * rgb[0]) + (0.587 * rgb[1]) + (0.114 * rgb[2])
+
+    return [intensity] * 3
+
+def rgb_to_xyz(rgb: Vector) -> Vector:
+    """
+    Input: [0,1]
+    Output: [0,1]
+    """
+    # RGB to XYZ conversion matrix D65 white point 
     M = np.array([[0.412453, 0.357580, 0.180423],
                   [0.212671, 0.715160, 0.072169],
                   [0.019334, 0.119193, 0.950227]])
 
     return np.dot(M, rgb).tolist()
 
-def xyz_to_rgb(xyz):
+def rgb_to_hsv(rgb: Vector) -> Vector:
+    """
+    Input: [0,1]
+    Output: 0≤V≤1, 0≤S≤1, 0≤H≤360
+    """
+    min_val = min(rgb)
+
+    v = max(rgb)
+
+    s = (0.0) if (v == 0) else ((v - min_val) / v)
+
+    h = 0.0
+    if v == rgb[0]:
+        h = 60.0 * (rgb[1] - rgb[2]) / (v - min_val)
+    elif v == rgb[1]:
+        120.0 + 60.0 * (rgb[2] - rgb[0]) / (v - min_val)
+    else:
+        240.0 + 60.0 * (rgb[0] - rgb[1]) / (v - min_val)
+
+    if h < 0:
+        h = h + 360.0
+
+    return [h, s, v]
+
+def rgb_to_hls(rgb: Vector) -> Vector:
+    """
+    Input: [0,1]
+    Output: 0≤L≤1, 0≤S≤1, 0≤H≤360
+    """
+    v_max = max(rgb)
+    v_min = min(rgb)
+    v_sum = v_max + v_min
+    v_diff = v_max - v_min
+
+    l = (v_max + v_min) / 2.0
+
+    s = (v_diff / v_sum) if (l < 0.5) else (v_diff / (2.0 - v_sum))
+
+    h = 0.0
+    if v_max == rgb[0]:
+        60.0 * (rgb[1] - rgb[2]) / v_diff
+    elif v_max == rgb[1]:
+        120.0 + 60.0 * (rgb[2] - rgb[0]) / v_diff
+    else:
+        240.0 + 60.0 * (rgb[0] - rgb[1]) / v_diff
+
+    if h < 0:
+        h = h + 360.0
+
+    return [h, l, s]
+
+def xyz_to_rgb(xyz: Vector) -> Vector:
+    # inverse RGB to XYZ conversion matrix D65 white point 
     M_inv = np.array([[ 3.240479, -1.53715,  -0.498535],
                       [-0.969256,  1.875991,  0.041556],
                       [ 0.055648, -0.204043,  1.057311]])
 
     return np.clip(np.dot(M_inv, xyz), 0, 1).tolist()
 
-def xyz_to_lab(xyz):
+def xyz_to_lab(xyz: Vector) -> Vector:
     lab = np.zeros(3)
     X = xyz[0] / 0.950455
     Y = xyz[1] / 1.0
@@ -40,8 +107,14 @@ def xyz_to_lab(xyz):
 
     return lab.tolist()
 
+def xyz_to_luv(xyz: Vector) -> Vector:
+    """
+    Input: [0,1]
+    Output: 0≤L≤100, −134≤u≤220, −140≤v≤122
+    """
+    pass
 
-def lerp(colorStart, colorEnd, u):
+def lerp(colorStart: Vector, colorEnd: Vector, u: int) -> Vector:
     return (1 - u) * colorStart + u * colorEnd
 
 if __name__ == "__main__":

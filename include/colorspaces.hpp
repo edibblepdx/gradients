@@ -30,6 +30,12 @@ namespace color
         rgb_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
     };
 
+    struct gray_t: public color_t
+    {
+        gray_t() = default;
+        gray_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
+    };
+
     struct xyz_t: public color_t
     {
         xyz_t() = default;
@@ -40,6 +46,24 @@ namespace color
     {
         lab_t() = default;
         lab_t(const float x, const float y, const float z) : color_t(x, y, z) {}
+    };
+
+    struct luv_t: public color_t
+    {
+        luv_t() = default;
+        luv_t(const float x, const float y, const float z) : color_t(x, y, z) {}
+    };
+
+    struct hsv_t: public color_t
+    {
+        hsv_t() = default;
+        hsv_t(const float x, const float y, const float z) : color_t(x, y, z) {}
+    };
+
+    struct hls_t: public color_t
+    {
+        hls_t() = default;
+        hls_t(const float x, const float y, const float z) : color_t(x, y, z) {}
     };
 
     ////////////////////////////////////////////////////////////////////////////
