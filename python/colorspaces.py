@@ -6,6 +6,7 @@ colorspaces.py - conversions between colorspaces.
 Author: Ethan Dibble
 
 Sources for conversions:
+- my class lectures
 - https://docs.opencv.org/3.1.0/de/d25/imgproc_color_conversions.html#gsc.tab=0
 - https://poynton.ca/PDFs/coloureq.pdf
 """
@@ -114,6 +115,7 @@ def xyz_to_luv(xyz: Vector) -> Vector:
     """
     pass
 
+# this is weird weird
 def lerp(colorStart: Vector, colorEnd: Vector, u: int) -> Vector:
     return (1 - u) * colorStart + u * colorEnd
 

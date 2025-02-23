@@ -11,11 +11,13 @@
 
 #pragma once
 
-static inline constexpr float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
-
 /* Define color types */
 namespace color
 {
+    static inline constexpr float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
+
+    ////////////////////////////////////////////////////////////////////////////
+
     struct color_t
     {
         color_t() = default;
@@ -68,16 +70,32 @@ namespace color
 
     ////////////////////////////////////////////////////////////////////////////
 
+    // addition
     template<class T>
-    constexpr T operator + (const T &c1, const T &c2)
+    constexpr T operator + (const T &v1, const T &v2)
     {
-        return T { c1.x + c2.x, c1.y + c2.y, c1.z + c2.z };
+        return T { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
     }
 
+    // subtraction
     template<class T>
-    constexpr T operator - (const T &c1, const T &c2)
+    constexpr T operator - (const T &v1, const T &v2)
     {
-        return T { c1.x - c2.x, c1.y - c2.y, c1.z - c2.z };
+        return T { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
+    }
+
+    // left-hand scalar multiplication
+    template<class T>
+    constexpr T operator * (float s, const T &v)
+    {
+        return T { s * v.x, s * v.y, s * v.z };
+    }
+
+    // right-hand scalar multiplication
+    template<class T>
+    constexpr T operator * (const T &v, float s)
+    {
+        return T { s * v.x, s * v.y, s * v.z };
     }
 }
 
