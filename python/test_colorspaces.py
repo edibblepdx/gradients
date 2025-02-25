@@ -7,7 +7,8 @@ from colorspaces import (
     xyz_to_rgb,
     rgb_to_hsv,
     rgb_to_hls,
-    xyz_to_lab
+    xyz_to_lab,
+    lerp
 )
 
 DELTA = 1e-4
@@ -36,8 +37,11 @@ class TestColorConversions(unittest.TestCase):
     def test_rgb_to_hls(self):
         pass
 
-    def test_xyz_to_la(self):
+    def test_xyz_to_lab(self):
         pass
+
+    def test_lerp(self):
+        self.assertListEqual([0.625, 0.625, 0.625], lerp([0.5, 0.5, 0.5], [1.0, 1.0, 1.0], 0.25))
 
 if __name__ == '__main__':
     unittest.main()

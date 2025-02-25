@@ -2,7 +2,6 @@
 
 """
 colorspaces.py - conversions between colorspaces.
-assuming (linear) sRGB
 
 Author: Ethan Dibble
 
@@ -10,11 +9,14 @@ Sources for conversions:
 - my class lectures
 - https://docs.opencv.org/3.1.0/de/d25/imgproc_color_conversions.html#gsc.tab=0
 - https://poynton.ca/PDFs/coloureq.pdf
+- https://en.wikipedia.org/wiki/SRGB
 """
 
-type Vector = list[float]
+from decorators import exception_handler
 
+type Vector = list[float] # length 3
 
+@exception_handler
 def rgb_grayscale(rgb: Vector) -> Vector:
     """rgb: [0,1] -> rgb: [0,1]"""
 
@@ -23,7 +25,7 @@ def rgb_grayscale(rgb: Vector) -> Vector:
 
     return [intensity] * 3
 
-
+@exception_handler
 def rgb_to_xyz(rgb: Vector) -> Vector:
     """rgb: [0,1] -> xyz: [0,1]""" # WRONG
 
@@ -40,7 +42,7 @@ def rgb_to_xyz(rgb: Vector) -> Vector:
 
     return [x, y, z]
 
-
+@exception_handler
 def rgb_to_hsv(rgb: Vector) -> Vector:
     """rgb: [0,1] -> hsv: 0≤H≤360, 0≤S≤1, 0≤V≤1"""
 
@@ -63,7 +65,7 @@ def rgb_to_hsv(rgb: Vector) -> Vector:
 
     return [h, s, v_max]
 
-
+@exception_handler
 def rgb_to_hls(rgb: Vector) -> Vector:
     """rgb: [0,1] -> hls: 0≤H≤360, 0≤L≤1, 0≤S≤1"""
 
@@ -90,7 +92,7 @@ def rgb_to_hls(rgb: Vector) -> Vector:
 
     return [h, l, s]
 
-
+@exception_handler
 def xyz_to_rgb(xyz: Vector) -> Vector:
     """xyz: [0,1] -> rgb: [0,1]""" # WRONG
 
@@ -107,7 +109,7 @@ def xyz_to_rgb(xyz: Vector) -> Vector:
 
     return [r, g, b]
 
-
+@exception_handler
 def xyz_to_lab(xyz: Vector) -> Vector:
     """rgb: [0,1] -> lab: [0,1]""" # WRONG
 
@@ -125,28 +127,23 @@ def xyz_to_lab(xyz: Vector) -> Vector:
 
     return [l, a, b]
 
-
+@exception_handler
 def xyz_to_luv(xyz: Vector) -> Vector:
     """xyz: [0,1] -> luv: 0≤L≤100, -134≤u≤220, -140≤v≤122""" # WRONG
 
     pass
 
-
-# this is weird weird
-def lerp(colorStart: Vector, colorEnd: Vector, u: int) -> Vector:
-    return (1 - u) * colorStart + u * colorEnd
+@exception_handler
+def lerp(colorStart: Vector, colorEnd: Vector, t: float) -> Vector:
+    return [
+        (1 - t) * colorStart[0] + t * colorEnd[0],
+        (1 - t) * colorStart[1] + t * colorEnd[1],
+        (1 - t) * colorStart[2] + t * colorEnd[2],
+    ]
 
 
 if __name__ == "__main__":
-    colorStart = np.array([0.5, 0, 0])
-    colorEnd = np.array([1, 1, 1])
-
-    print(f"{'sRGB':24}", "L*a*b*")
-    print("-" * 70)
-    for u in [0, 0.25, 0.5, 0.75, 1]:
-        color = lerp(colorStart, colorEnd, u)
-        print(f"{np.array_str(color):20}", "\t", xyz_to_lab(rgb_to_xyz(color)))
-
-    for i in range(1):
+    for i in range(255):
         r, g, b = i, 255 - i, 128  # Example gradient logic
         print(f"\x1b[38;2;{r};{g};{b}m█\x1b[0m", end="")
+    print(lerp([0.5, 0.5, 0.5], [1.0, 1.0, 1.0], 0.25))
