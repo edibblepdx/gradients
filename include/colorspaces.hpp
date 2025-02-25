@@ -32,12 +32,6 @@ namespace color
         rgb_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
     };
 
-    struct gray_t: public color_t
-    {
-        gray_t() = default;
-        gray_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
-    };
-
     struct xyz_t: public color_t
     {
         xyz_t() = default;

@@ -70,14 +70,19 @@ call_python( const char *func_name, const color_t *input )
 // Perform a function call to a Python interface routine using the converted values, and
 // Convert the data values from the call from Python to C++.
 
+rgb_t rgb_grayscale( const rgb_t& c ) { return parse_python<rgb_t>(call_python("rgb_grayscale", &c)); }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 xyz_t rgb_to_xyz( const rgb_t& c ) { return parse_python<xyz_t>(call_python("rgb_to_xyz", &c)); }
-rgb_t xyz_to_rgb( const xyz_t& c ) { return parse_python<rgb_t>(call_python("xyz_to_rgb", &c)); }
+hsv_t rgb_to_hsv( const rgb_t& c ) { return parse_python<hsv_t>(call_python("rgb_to_hsv", &c)); }
+hls_t rgb_to_hls( const rgb_t& c ) { return parse_python<hls_t>(call_python("rgb_to_hls", &c)); }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+rgb_t xyz_to_rgb( const xyz_t& c ) { return parse_python<rgb_t>(call_python("xyz_to_rgb", &c)); }
 lab_t xyz_to_lab( const xyz_t& c ) { return parse_python<lab_t>(call_python("xyz_to_lab", &c)); }
+luv_t xyz_to_luv( const xyz_t& c ) { return parse_python<luv_t>(call_python("xyz_to_luv", &c)); }
 
 ////////////////////////////////////////////////////////////////////////////////
 }

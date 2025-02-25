@@ -16,7 +16,7 @@ import numpy as np
 type Vector = list[float]
 
 
-def rgb_to_gray(rgb: Vector) -> Vector:
+def rgb_grayscale(rgb: Vector) -> Vector:
     """
     Input: [0,1]
     Output: [0,1]
