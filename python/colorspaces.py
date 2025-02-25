@@ -2,6 +2,7 @@
 
 """
 colorspaces.py - conversions between colorspaces.
+assuming (linear) sRGB
 
 Author: Ethan Dibble
 
@@ -11,55 +12,51 @@ Sources for conversions:
 - https://poynton.ca/PDFs/coloureq.pdf
 """
 
-import numpy as np
-
 type Vector = list[float]
 
 
 def rgb_grayscale(rgb: Vector) -> Vector:
-    """
-    Input: [0,1]
-    Output: [0,1]
-    """
-    intensity = (0.299 * rgb[0]) + (0.587 * rgb[1]) + (0.114 * rgb[2])
+    """rgb: [0,1] -> rgb: [0,1]"""
+
+    r, g, b = rgb
+    intensity = (0.299 * r) + (0.587 * g) + (0.114 * b)
 
     return [intensity] * 3
 
 
 def rgb_to_xyz(rgb: Vector) -> Vector:
-    """
-    Input: [0,1]
-    Output: [0,1]
-    """
-    # RGB to XYZ conversion matrix D65 white point
-    M = np.array(
-        [
-            [0.412453, 0.357580, 0.180423],
-            [0.212671, 0.715160, 0.072169],
-            [0.019334, 0.119193, 0.950227],
-        ]
-    )
+    """rgb: [0,1] -> xyz: [0,1]""" # WRONG
 
-    return np.dot(M, rgb).tolist()
+    # RGB to XYZ conversion matrix D65 white point
+    # [0.412453, 0.357580, 0.180423]
+    # [0.212671, 0.715160, 0.072169]
+    # [0.019334, 0.119193, 0.950227]
+
+    r,g,b = rgb
+
+    x = (r * 0.412453) + (g * 0.357580) + (b * 0.180423)
+    y = (r * 0.212671) + (g * 0.715160) + (b * 0.072169)
+    z = (r * 0.019334) + (g * 0.119193) + (b * 0.950227)
+
+    return [x, y, z]
 
 
 def rgb_to_hsv(rgb: Vector) -> Vector:
-    """
-    Input: [0,1]
-    Output: 0≤V≤1, 0≤S≤1, 0≤H≤360
-    """
+    """rgb: [0,1] -> hsv: 0≤H≤360, 0≤S≤1, 0≤V≤1"""
+
+    r, g, b = rgb
     v_max = max(rgb)
     v_min = min(rgb)
 
     s = (0.0) if (v == 0) else ((v - min_val) / v)
 
     h = 0.0
-    if v == rgb[0]:
-        h = 60.0 * (rgb[1] - rgb[2]) / (v - min_val)
-    elif v == rgb[1]:
-        120.0 + 60.0 * (rgb[2] - rgb[0]) / (v - min_val)
+    if v == r:
+        h = 60.0 * (g - b) / (v - v_min)
+    elif v == g:
+        120.0 + 60.0 * (b - r) / (v - v_min)
     else:
-        240.0 + 60.0 * (rgb[0] - rgb[1]) / (v - min_val)
+        240.0 + 60.0 * (r - g) / (v - v_min)
 
     if h < 0:
         h = h + 360.0
@@ -68,10 +65,9 @@ def rgb_to_hsv(rgb: Vector) -> Vector:
 
 
 def rgb_to_hls(rgb: Vector) -> Vector:
-    """
-    Input: [0,1]
-    Output: 0≤L≤1, 0≤S≤1, 0≤H≤360
-    """
+    """rgb: [0,1] -> hls: 0≤H≤360, 0≤L≤1, 0≤S≤1"""
+
+    r, g, b = rgb
     v_max = max(rgb)
     v_min = min(rgb)
     v_sum = v_max + v_min
@@ -82,12 +78,12 @@ def rgb_to_hls(rgb: Vector) -> Vector:
     s = (v_diff / v_sum) if (l < 0.5) else (v_diff / (2.0 - v_sum))
 
     h = 0.0
-    if v_max == rgb[0]:
-        60.0 * (rgb[1] - rgb[2]) / v_diff
-    elif v_max == rgb[1]:
-        120.0 + 60.0 * (rgb[2] - rgb[0]) / v_diff
+    if v_max == r:
+        60.0 * (g - b) / v_diff
+    elif v_max == g:
+        120.0 + 60.0 * (b - r) / v_diff
     else:
-        240.0 + 60.0 * (rgb[0] - rgb[1]) / v_diff
+        240.0 + 60.0 * (r - g) / v_diff
 
     if h < 0:
         h = h + 360.0
@@ -96,37 +92,43 @@ def rgb_to_hls(rgb: Vector) -> Vector:
 
 
 def xyz_to_rgb(xyz: Vector) -> Vector:
-    # inverse RGB to XYZ conversion matrix D65 white point
-    M_inv = np.array(
-        [
-            [3.240479, -1.53715, -0.498535],
-            [-0.969256, 1.875991, 0.041556],
-            [0.055648, -0.204043, 1.057311],
-        ]
-    )
+    """xyz: [0,1] -> rgb: [0,1]""" # WRONG
 
-    return np.clip(np.dot(M_inv, xyz), 0, 1).tolist()
+    # inverse RGB to XYZ conversion matrix D65 white point
+    # [ 3.240479, -1.53715, -0.498535]
+    # [-0.969256,  1.875991, 0.041556]
+    # [ 0.055648, -0.204043, 1.057311]
+
+    x, y, z = xyz
+
+    r = (x *  3.240479) + (y * -1.53715 ) + (z * -0.498535)
+    g = (x * -0.969256) + (y *  1.875991) + (z *  0.041556)
+    b = (x *  0.055648) + (y * -0.204043) + (z *  1.057311)
+
+    return [r, g, b]
 
 
 def xyz_to_lab(xyz: Vector) -> Vector:
-    lab = np.zeros(3)
-    X = xyz[0] / 0.950455
-    Y = xyz[1] / 1.0
-    Z = xyz[2] / 1.088753
-    f = lambda t: t ** (1 / 3) if t > 0.008856 else 7.787 * t + (16 / 116)
+    """rgb: [0,1] -> lab: [0,1]""" # WRONG
 
-    lab[0] = 116 * f(Y) - 16 if Y > 0.008856 else 903.3 * Y
-    lab[1] = 500 * (f(X) - f(Y))
-    lab[2] = 200 * (f(Y) - f(Z))
+    x, y, z = xyz
+    x /= 0.950455
+    y /= 1.0
+    z /= 1.088753
 
-    return lab.tolist()
+    def d(t: float) -> float:
+        return t ** (1 / 3) if t > 0.008856 else 7.787 * t + (16 / 116)
+
+    l = 116 * f(Y) - 16 if Y > 0.008856 else 903.3 * Y
+    a = 500 * (f(X) - f(Y))
+    b = 200 * (f(Y) - f(Z))
+
+    return [l, a, b]
 
 
 def xyz_to_luv(xyz: Vector) -> Vector:
-    """
-    Input: [0,1]
-    Output: 0≤L≤100, −134≤u≤220, −140≤v≤122
-    """
+    """xyz: [0,1] -> luv: 0≤L≤100, -134≤u≤220, -140≤v≤122""" # WRONG
+
     pass
 
 
