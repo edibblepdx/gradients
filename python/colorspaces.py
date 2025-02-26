@@ -2,13 +2,14 @@
 
 """
 colorspaces.py - conversions between colorspaces.
+I use piecewise notation for clarity.
 
 Author: Ethan Dibble
 
 Sources for conversions:
-- my class lectures
 - https://docs.opencv.org/3.1.0/de/d25/imgproc_color_conversions.html#gsc.tab=0
 - https://poynton.ca/PDFs/coloureq.pdf
+- https://poynton.ca/ColorFAQ.html
 - https://en.wikipedia.org/wiki/SRGB
 """
 
@@ -49,16 +50,19 @@ def rgb_to_hsv(rgb: Vector) -> Vector:
     r, g, b = rgb
     v_max = max(rgb)
     v_min = min(rgb)
+    delta = v_max - v_min
 
-    s = (0.0) if (v == 0) else ((v - min_val) / v)
+    s = (
+        0.0                            if v_max == 0.0
+        else (v_max - v_min) / v_max # if v_max != 0.0
+    )
 
-    h = 0.0
-    if v == r:
-        h = 60.0 * (g - b) / (v - v_min)
-    elif v == g:
-        120.0 + 60.0 * (b - r) / (v - v_min)
-    else:
-        240.0 + 60.0 * (r - g) / (v - v_min)
+    h = (
+        0.0                                     if delta == 0.0
+        else 60.0 * (g - b) / (delta)           if v_max == r
+        else 120.0 + 60.0 * (b - r) / (delta)   if v_max == g
+        else 240.0 + 60.0 * (r - g) / (delta) # if v_max == b
+    )
 
     if h < 0:
         h = h + 360.0
@@ -73,19 +77,21 @@ def rgb_to_hls(rgb: Vector) -> Vector:
     v_max = max(rgb)
     v_min = min(rgb)
     v_sum = v_max + v_min
-    v_diff = v_max - v_min
+    delta = v_max - v_min
 
-    l = (v_max + v_min) / 2.0
+    l = v_sum / 2.0
 
-    s = (v_diff / v_sum) if (l < 0.5) else (v_diff / (2.0 - v_sum))
+    s = (
+        delta / v_sum                if l <  0.5 
+        else delta / (2.0 - v_sum) # if l >= 0.5
+    )
 
-    h = 0.0
-    if v_max == r:
-        60.0 * (g - b) / v_diff
-    elif v_max == g:
-        120.0 + 60.0 * (b - r) / v_diff
-    else:
-        240.0 + 60.0 * (r - g) / v_diff
+    h = (
+        0.0                                     if delta == 0.0
+        else 60.0 * (g - b) / (delta)           if v_max == r
+        else 120.0 + 60.0 * (b - r) / (delta)   if v_max == g
+        else 240.0 + 60.0 * (r - g) / (delta) # if v_max == b
+    )
 
     if h < 0:
         h = h + 360.0
@@ -114,16 +120,22 @@ def xyz_to_lab(xyz: Vector) -> Vector:
     """rgb: [0,1] -> lab: [0,1]""" # WRONG
 
     x, y, z = xyz
-    x /= 0.950455
-    y /= 1.0
-    z /= 1.088753
+    x /= 0.950456
+    z /= 1.088754
 
-    def d(t: float) -> float:
-        return t ** (1 / 3) if t > 0.008856 else 7.787 * t + (16 / 116)
+    def f(t: float) -> float:
+        return (
+            t ** (1 / 3)                  if t >  0.008856 
+            else 7.787 * t + (16 / 116) # if t <= 0.00856
+        )
 
-    l = 116 * f(Y) - 16 if Y > 0.008856 else 903.3 * Y
-    a = 500 * (f(X) - f(Y))
-    b = 200 * (f(Y) - f(Z))
+    l = (
+        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856 
+        else 903.3 * y              # if y <= 0.008856
+    )
+    # assume floating point images
+    a = 500.0 * (f(x) - f(y)) # add 128 for 8-bit images
+    b = 200.0 * (f(y) - f(z)) # add 128 for 8-bit images
 
     return [l, a, b]
 
@@ -131,7 +143,19 @@ def xyz_to_lab(xyz: Vector) -> Vector:
 def xyz_to_luv(xyz: Vector) -> Vector:
     """xyz: [0,1] -> luv: 0≤L≤100, -134≤u≤220, -140≤v≤122""" # WRONG
 
-    pass
+    x, y, z = xyz
+
+    l = (
+        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856 
+        else 903.3 * y              # if y <= 0.008856
+    )
+    u = 4.0 * x / (x + 15.0 * y + 3 * z)
+    v = 9.0 * x / (x + 15.0 * y + 3 * z)
+
+    u = 13.0 * l * (u - 0.19793943)
+    v = 13.0 * l * (v - 0.46831096)
+
+    return [l, u, v]
 
 @exception_handler
 def lerp(colorStart: Vector, colorEnd: Vector, t: float) -> Vector:
@@ -141,9 +165,8 @@ def lerp(colorStart: Vector, colorEnd: Vector, t: float) -> Vector:
         (1 - t) * colorStart[2] + t * colorEnd[2],
     ]
 
-
 if __name__ == "__main__":
     for i in range(255):
         r, g, b = i, 255 - i, 128  # Example gradient logic
         print(f"\x1b[38;2;{r};{g};{b}m█\x1b[0m", end="")
-    print(lerp([0.5, 0.5, 0.5], [1.0, 1.0, 1.0], 0.25))
+    print()

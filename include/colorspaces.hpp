@@ -92,27 +92,3 @@ namespace color
         return T { s * v.x, s * v.y, s * v.z };
     }
 }
-
-/*
-// linearly interpolate a gradient in a given space and convert if chosen
-// in most cases, I will interpolate in one space and convert samples to RGB to display
-// please compiler optimize my return value
-template<class IN, class OUT = IN>
-std::vector<OUT> linear_gradient(IN start, IN end, int n_samples, char *conversion)
-{
-    std::vector<OUT> gradient;
-
-    float step_X = 0.f;
-    float step_Y = 0.f;
-    float step_Z = 0.f;
-
-    // standard lerp
-    for (int i = 0; i < n_samples; ++i) {
-        if (conversion) {
-            convert(conversion, input);
-        }
-    }
-
-    return gradient;
-}
-*/
