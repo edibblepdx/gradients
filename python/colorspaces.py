@@ -82,7 +82,9 @@ def rgb_to_hls(rgb: Vector) -> Vector:
     l = v_sum / 2.0
 
     s = (
-        delta / v_sum                if l <  0.5 
+        0.0                          if v_sum == 0.0 # validate behavior
+        else 0.0                     if v_sum == 2.0 # validate behavior
+        else delta / v_sum           if l <  0.5
         else delta / (2.0 - v_sum) # if l >= 0.5
     )
 
@@ -125,12 +127,12 @@ def xyz_to_lab(xyz: Vector) -> Vector:
 
     def f(t: float) -> float:
         return (
-            t ** (1 / 3)                  if t >  0.008856 
-            else 7.787 * t + (16 / 116) # if t <= 0.00856
+            t ** (1 / 3)                  if t >  0.008856
+            else 7.787 * t + (16 / 116) # if t <= 0.008856
         )
 
     l = (
-        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856 
+        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856
         else 903.3 * y              # if y <= 0.008856
     )
     # assume floating point images
@@ -146,7 +148,7 @@ def xyz_to_luv(xyz: Vector) -> Vector:
     x, y, z = xyz
 
     l = (
-        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856 
+        116.0 * y ** (1 / 3) - 16.0   if y >  0.008856
         else 903.3 * y              # if y <= 0.008856
     )
     u = 4.0 * x / (x + 15.0 * y + 3 * z)
