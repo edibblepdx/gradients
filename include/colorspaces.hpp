@@ -14,7 +14,7 @@
 /* Define color types */
 namespace color
 {
-    static inline constexpr float clamp(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
+    inline constexpr float saturate(float v) { return (v < 0.f) ? 0.f : (v > 1.f) ? 1.f : v; }
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +29,7 @@ namespace color
     struct rgb_t: public color_t
     {
         rgb_t() = default;
-        rgb_t(const float x, const float y, const float z) : color_t(clamp(x), clamp(y), clamp(z)) {}
+        rgb_t(const float x, const float y, const float z) : color_t(saturate(x), saturate(y), saturate(z)) {}
     };
 
     struct xyz_t: public color_t

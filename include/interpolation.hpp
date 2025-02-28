@@ -14,7 +14,7 @@ namespace color
     {
         rgb_t lerp (const rgb_t &start, const rgb_t &end, float t)
         {
-            t = clamp(t); // [0.0, 1.0]
+            t = saturate(t); // clamp [0.0, 1.0]
             return start + t * (end - start);
         }
     }
